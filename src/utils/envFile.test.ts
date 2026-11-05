@@ -39,6 +39,7 @@ const TEST_ENV_KEYS = [
   'OPENAI_MODEL',
   'OPENCLAUDE_OLLAMA_NUM_CTX',
   'REQUESTY_API_KEY',
+  'OPPER_API_KEY',
   'OLLAMA_API_KEY',
   'OLLAMA_BASE_URL',
   ...PROVIDER_SELECTION_FLAGS,
@@ -421,6 +422,17 @@ describe('loadEnvFile', () => {
     expect(process.env.CLAUDE_CODE_USE_OPENAI).toBeUndefined()
     expect(process.env.OPENAI_BASE_URL).toBeUndefined()
     expect(loaded).toEqual({ REQUESTY_API_KEY: 'requesty-key' })
+  })
+
+  it('loads the dedicated Opper credential without selecting a route', () => {
+    const filePath = writeTempEnvFile('OPPER_API_KEY=opper-key')
+
+    const loaded = loadEnvFile(filePath)
+
+    expect(process.env.OPPER_API_KEY).toBe('opper-key')
+    expect(process.env.CLAUDE_CODE_USE_OPENAI).toBeUndefined()
+    expect(process.env.OPENAI_BASE_URL).toBeUndefined()
+    expect(loaded).toEqual({ OPPER_API_KEY: 'opper-key' })
   })
 
   it('loads the dedicated Command Code credential without selecting a route', () => {

@@ -8,6 +8,7 @@ import {
   getRouteProviderTypeLabel,
   isApismartBaseUrl,
   isCanonicalApismartInferenceBaseUrl,
+  isCanonicalOpperInferenceBaseUrl,
   isCanonicalRequestyInferenceBaseUrl,
   isCloudflareBaseUrl,
   isConcentrateBaseUrl,
@@ -588,6 +589,79 @@ test('Requesty credential is limited to the canonical inference base URLs', () =
     resolveRouteCredentialValue({
       routeId: 'requesty',
       baseUrl: 'https://router.requesty.ai/v1/models',
+      processEnv,
+    }),
+  ).toBeUndefined()
+})
+
+test('isCanonicalOpperInferenceBaseUrl accepts only the https /v3/compat URL', () => {
+  for (const baseUrl of [
+    'https://api.opper.ai/v3/compat',
+    'https://api.opper.ai/v3/compat/',
+  ]) {
+    expect(isCanonicalOpperInferenceBaseUrl(baseUrl)).toBe(true)
+  }
+
+  for (const baseUrl of [
+    undefined,
+    '',
+    'not a url',
+    'http://api.opper.ai/v3/compat',
+    'https://api.opper.ai:8443/v3/compat',
+    'https://user:pass@api.opper.ai/v3/compat',
+    'https://api.opper.ai/v3/compat?x=1',
+    'https://api.opper.ai/v3/compat#fragment',
+    'https://api.opper.ai',
+    'https://api.opper.ai/v3',
+    'https://api.opper.ai/v3/compat/models',
+    'https://api.opper.ai.evil.example/v3/compat',
+    'https://evil-api.opper.ai/v3/compat',
+    'https://opper.ai/v3/compat',
+  ]) {
+    expect(isCanonicalOpperInferenceBaseUrl(baseUrl)).toBe(false)
+  }
+})
+
+test('Opper base URL resolves to the opper route', () => {
+  expect(resolveRouteIdFromBaseUrl('https://api.opper.ai/v3/compat')).toBe(
+    'opper',
+  )
+  expect(
+    resolveRouteIdFromBaseUrl('https://api.opper.ai.evil.example/v3/compat'),
+  ).toBe(null)
+})
+
+test('Opper credential is limited to the canonical inference base URL', () => {
+  const processEnv = {
+    OPPER_API_KEY: 'opper-secret',
+    OPENAI_API_KEY: 'sk-openai-fallback',
+  }
+
+  expect(
+    resolveRouteCredentialValue({
+      routeId: 'opper',
+      baseUrl: 'https://api.opper.ai/v3/compat',
+      processEnv,
+    }),
+  ).toBe('opper-secret')
+  expect(
+    resolveRouteCredentialValue({
+      routeId: 'opper',
+      baseUrl: 'https://api.opper.ai/v3/compat',
+      processEnv: { OPENAI_API_KEY: 'sk-openai-fallback' },
+    }),
+  ).toBe('sk-openai-fallback')
+  expect(
+    resolveRouteCredentialValue({
+      routeId: 'opper',
+      baseUrl: 'http://api.opper.ai/v3/compat',
+      processEnv,
+    }),
+  ).toBeUndefined()
+  expect(
+    resolveRouteCredentialValue({
+      routeId: 'opper',
+      baseUrl: 'https://api.opper.ai/v3/compat/models',
       processEnv,
     }),
   ).toBeUndefined()

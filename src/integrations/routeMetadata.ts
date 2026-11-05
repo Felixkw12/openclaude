@@ -597,6 +597,37 @@ export function isCanonicalRequestyInferenceBaseUrl(
   }
 }
 
+const OPPER_INFERENCE_HOST = 'api.opper.ai'
+
+/**
+ * Opper serves its OpenAI-compatible API at /v3/compat on one host. Only that
+ * exact https origin and path may receive OPPER_API_KEY.
+ */
+export function isCanonicalOpperInferenceBaseUrl(
+  value: string | undefined,
+): boolean {
+  const trimmed = value?.trim()
+  if (!trimmed) {
+    return false
+  }
+
+  try {
+    const candidate = new URL(trimmed)
+    return (
+      candidate.protocol === 'https:' &&
+      !candidate.port &&
+      !candidate.username &&
+      !candidate.password &&
+      !candidate.search &&
+      !candidate.hash &&
+      candidate.hostname.toLowerCase() === OPPER_INFERENCE_HOST &&
+      candidate.pathname.replace(/\/+$/, '') === '/v3/compat'
+    )
+  } catch {
+    return false
+  }
+}
+
 const MERGE_GATEWAY_CANONICAL_INFERENCE_BASE_URL = 'https://api-gateway.merge.dev/v1/openai'
 
 export function isCanonicalMergeGatewayInferenceBaseUrl(
@@ -1414,6 +1445,13 @@ export function resolveRouteCredentialValue(
     routeId === 'requesty' &&
     options?.baseUrl !== undefined &&
     !isCanonicalRequestyInferenceBaseUrl(options.baseUrl)
+  ) {
+    return undefined
+  }
+  if (
+    routeId === 'opper' &&
+    options?.baseUrl !== undefined &&
+    !isCanonicalOpperInferenceBaseUrl(options.baseUrl)
   ) {
     return undefined
   }

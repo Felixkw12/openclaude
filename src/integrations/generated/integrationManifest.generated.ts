@@ -494,6 +494,17 @@ export const PROVIDER_PRESET_MANIFEST = [
     ]
   },
   {
+    "preset": "opper",
+    "routeKind": "gateway",
+    "routeId": "opper",
+    "vendorId": "openai",
+    "gatewayId": "opper",
+    "description": "Opper OpenAI-compatible gateway",
+    "apiKeyEnvVars": [
+      "OPPER_API_KEY"
+    ]
+  },
+  {
     "preset": "orcarouter",
     "routeKind": "gateway",
     "routeId": "orcarouter",
@@ -699,6 +710,7 @@ export const ORDERED_PROVIDER_PRESETS = [
   "opencode-go",
   "opencode",
   "openrouter",
+  "opper",
   "orcarouter",
   "requesty",
   "runcrate",
